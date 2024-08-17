@@ -1,59 +1,89 @@
-from bs4 import BeautifulSoup
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-import pandas as pd
+# from bs4 import BeautifulSoup
+# from selenium import webdriver
+# from selenium.webdriver.common.by import By
+# from selenium.webdriver.support.ui import WebDriverWait
+# from selenium.webdriver.support import expected_conditions as EC
+# import pandas as pd
 
-headers = {
-    'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.246"
-}
+# headers = {
+#     'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.246"
+# }
 
-driver = webdriver.Chrome()
-url = "https://www.espn.com/womens-college-basketball/stats/player"
-driver.get(url)
+# driver = webdriver.Chrome()
+# url = "https://www.espn.com/womens-college-basketball/stats/player"
+# driver.get(url)
 
-# display all entries
-try:
-    while True:
-        button = WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CLASS_NAME, "loadMore__link")))
-        button.click()
-except:
-    print('finished')
+# # display all entries
+# try:
+#     while True:
+#         button = WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CLASS_NAME, "loadMore__link")))
+#         button.click()
+# except:
+#     print('finished')
 
-soup = BeautifulSoup(driver.page_source, 'html.parser')
+# soup = BeautifulSoup(driver.page_source, 'html.parser')
 
-tables = soup.findAll('tbody', attrs={'class': 'Table__TBODY'})
-players_teams = tables[0].findAll('div', attrs={'class': 'athleteCell__flag flex items-start mr7'})
-all_stats = tables[1].findAll('tr', attrs={'class': 'Table__TR Table__TR--sm Table__even'})
+# tables = soup.findAll('tbody', attrs={'class': 'Table__TBODY'})
+# players_teams = tables[0].findAll('div', attrs={'class': 'athleteCell__flag flex items-start mr7'})
+# all_stats = tables[1].findAll('tr', attrs={'class': 'Table__TR Table__TR--sm Table__even'})
 
-fields = ['Position', 'Games Played', 'Minutes Per Game', 'Points Per Game', 'Average Field Goals Made', 'Average Field Goals Attempted', 'Field Goal Percentage', 'Average 3-Point Field Goals Made', 'Average 3-Point Field Goals Attempted', '3-Point Field Goal Percentage', 'Average Free Throws Made', 'Average Free Throws Attempted', 'Free Throws Percentage', 'Rebounds Per Game', 'Assists Per Game', 'Steals Per Game', 'Blocks Per Game', 'Turnovers Per Game']
+# fields = ['Position', 'Games Played', 'Minutes Per Game', 'Points Per Game', 'Average Field Goals Made', 'Average Field Goals Attempted', 'Field Goal Percentage', 'Average 3-Point Field Goals Made', 'Average 3-Point Field Goals Attempted', '3-Point Field Goal Percentage', 'Average Free Throws Made', 'Average Free Throws Attempted', 'Free Throws Percentage', 'Rebounds Per Game', 'Assists Per Game', 'Steals Per Game', 'Blocks Per Game', 'Turnovers Per Game']
 
-fields_abb = ['POS', 'GP', 'MIN', 'PTS', 'FGM', 'FGA', 'FG%', '3PM', '3PA', '3P%', 'FTM', 'FTA', 'FT%', 'REB', 'AST', 'STL', 'BLK', 'TO']
+# fields_abb = ['POS', 'GP', 'MIN', 'PTS', 'FGM', 'FGA', 'FG%', '3PM', '3PA', '3P%', 'FTM', 'FTA', 'FT%', 'REB', 'AST', 'STL', 'BLK', 'TO']
 
-table = []
-for i, player_team in enumerate(players_teams):
-    # print(player_team)
-    row = {}
+# table = []
+# for i, player_team in enumerate(players_teams):
+#     # print(player_team)
+#     row = {}
     
-    rank = i + 1
-    player = player_team.find('a').text
-    team = player_team.find('span').text
+#     rank = i + 1
+#     player = player_team.find('a').text
+#     team = player_team.find('span').text
     
-    row['RANK'] = rank
-    row['NAME'] = player
-    row['TEAM'] = team
+#     row['RANK'] = rank
+#     row['NAME'] = player
+#     row['TEAM'] = team
     
-    stats = all_stats[i].findAll('td', attrs={'class': 'Table__TD'})
-    print(stats)
-    for j, stat in enumerate(stats):
-        stats[j] = stat.text
-        row[fields_abb[j]] = stats[j]
-    print(stats)
+#     stats = all_stats[i].findAll('td', attrs={'class': 'Table__TD'})
+#     print(stats)
+#     for j, stat in enumerate(stats):
+#         stats[j] = stat.text
+#         row[fields_abb[j]] = stats[j]
+#     print(stats)
     
-    table.append(row)
-# print(table)
-df = pd.DataFrame(table)
-print(df)
+#     table.append(row)
+# # print(table)
+# df = pd.DataFrame(table)
+# print(df)
 
-df.to_csv('ncaaw_players.csv')
+# df.to_csv('ncaaw_players.csv')
+
+
+# from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+# import pandas as pd
+# import matplotlib.pyplot as plt
+
+# df = pd.read_csv('ncaaw.csv').dropna()
+
+# target_ids = df['POS'].values
+# colors = ['#1f77b4', '#ff7f0e', '#2ca02c']
+
+
+# X = df.iloc[:,5:].values
+
+# X = (X- X.mean()) / X.std()
+
+# print(X)
+# y = df['POS'].values
+# print(y)
+# print(X.shape, y.shape)
+# lda = LinearDiscriminantAnalysis(n_components=2)
+# lda.fit(X, y)
+# X_lda = lda.transform(X)
+# plt.figure(figsize=(5, 5))
+# for i, c, label in zip(target_ids, colors, df['POS'].unique()):
+#     plt.scatter(X_lda[y==i, 0], X_lda[y==i, 1], c=c, label=label)
+# plt.xlabel('Component 1')
+# plt.ylabel('Component 2')
+# plt.legend()
+# plt.show()
