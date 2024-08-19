@@ -1,6 +1,8 @@
 document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('click', function(evt){
+        console.log(evt.clientX, evt.clientY)
+    })
     d3.csv('ncaaw_players_2023-2024.csv').then(function(data) {
-        let svg = ''
         let players = []
         for (var i = 0; i < data.length; i++) {
             for (const col of Object.keys(data[i]).slice(5)) {
@@ -20,38 +22,23 @@ document.addEventListener('DOMContentLoaded', function() {
         const data_copy = JSON.parse(JSON.stringify(data))
         console.log(JSON.parse(JSON.stringify(data)))
 
-        let features = ['PTS', 'REB', 'BLK', 'STL', 'AST/TO Ratio', 'AST', '3PM', 'TS%']
+        // let features = ['PTS', 'REB', 'BLK', 'STL', 'AST/TO Ratio', 'AST', '3PM', 'TS%']
+        let features = ['Offensive Impact', 'Defensive Impact', 'AST/TO Ratio', 'Scoring Threat', 'Reliability']
         console.log(features)
         console.log(players)
-    
-        let max_stats = []
-        for (const feature of features) {
-            let max_stat = Math.max(...data.map(o => o[feature]))
-            for (var j = 0; j < data.length; j++) {
-                let row = data[j]
-                row[feature] = row[feature] * 10 / max_stat
-            }
-        }
+
 
         const getPercentile = (arr, val, field) => {
             const sorted = arr.slice().sort((a, b) => b[field] - a[field]);
             console.log(sorted)
             const rank = sorted.findIndex(obj => obj['NAME'] === val);
-            return (1 - (rank / (arr.length-1))) * 10;
+            return (1-(rank / (arr.length-1))) * 100;
         }
-        console.log(getPercentile(data_copy, 'Kaylee Krysztof', 'REB'))
-
+        console.log(getPercentile(data_copy, 'Caitlin Clark', 'AST'))
     
-        const container = document.createElement('div')
-        container.id = 'dropdown-container'
-    
-        const first_player_dropdown = document.createElement('select')
-        first_player_dropdown.id = 'dropdown1'
-        const second_player_dropdown = document.createElement('select')
-        second_player_dropdown.id = 'dropdown2'
-        document.body.appendChild(container)
-        container.appendChild(first_player_dropdown)
-        container.appendChild(second_player_dropdown)
+        const first_player_dropdown = document.querySelector('#player1')
+        const second_player_dropdown = document.querySelector('#player2')
+        
         for (const player of players) {
             const player_option = document.createElement('option')
             player_option.value = player
@@ -61,147 +48,167 @@ document.addEventListener('DOMContentLoaded', function() {
         for (const player of players) {
             const player_option = document.createElement('option')
             player_option.value = player
+            if (player === 'JuJu Watkins') {
+                player_option.selected = 'selected'
+            }
             player_option.textContent = player
             second_player_dropdown.appendChild(player_option)
         }
+
+        const percentile_checkbox = document.querySelector('#percentile')
+        percentile_checkbox.addEventListener('change', handle_change)
     
         first_player_dropdown.addEventListener('change', handle_change)
         second_player_dropdown.addEventListener('change', handle_change)
+
+        let player1 = first_player_dropdown.value
+        let player2 = second_player_dropdown.value
     
     
         function handle_change() {
-            player_data = []
-            let player1 = first_player_dropdown.value
-            let player2 = second_player_dropdown.value
-            player_data.push(data.find((obj) => obj.NAME === player1))
-            player_data.push(data.find((obj) => obj.NAME === player2))
+            player1 = first_player_dropdown.value
+            player2 = second_player_dropdown.value
+            player_data = set_data(player1, player2)
+            console.log(player_data)
             create_chart(player_data, features)
         }
-    
-    
-        let player1 = first_player_dropdown.value
-        let player2 = second_player_dropdown.value
-        player_data = []
-        player_data.push(data.find((obj) => obj.NAME === player1))
-        player_data.push(data.find((obj) => obj.NAME === player2))
-    
-        const create_chart = (data, features) => {
-    
-            if (svg !== '') {
-                document.body.removeChild(document.body.lastChild)
-            }
-    
-            let players = data.map(({ NAME }) => (Object.values({ NAME }))).flat(1);
-    
-            data = data.map(obj =>
-                Object.keys(obj).filter(key =>
-                    features.includes(key)).reduce((newObj, key) =>
-                    {
+
+        function set_data(player1, player2) {
+            let temp_data = []
+            
+            temp_data.push(data.find((obj) => obj.NAME === player1))
+            temp_data.push(data.find((obj) => obj.NAME === player2))
+
+            let new_data = temp_data.map(obj =>
+                features.reduce((newObj, key) => {
+                    if (obj.hasOwnProperty(key)) {
                         newObj[key] = obj[key];
-                        return newObj;
-                    }, {}
-                )
+                    }
+                    return newObj;
+                }, {})
             )
-    
-        
-            
-    
-            let width = 500;
-            let height = 500;
-            svg = d3.select("body").append("svg")
-                .attr("width", width)
-                .attr("height", height);
-    
-    
-            let radialScale = d3.scaleLinear()
-                .domain([0, 10])
-                .range([0, 150]);
-            let ticks = [2, 4, 6, 8, 10];
-    
-    
-            svg.selectAll("circle")
-                .data(ticks)
-                .join(
-                    enter => enter.append("circle")
-                        .attr("cx", width / 2)
-                        .attr("cy", height / 2)
-                        .attr("fill", "none")
-                        .attr("stroke", "#ccc")
-                        .attr("r", d => radialScale(d))
-                );
-    
-            function angleToCoordinate(angle, value){
-                let x = Math.cos(angle) * radialScale(value);
-                let y = Math.sin(angle) * radialScale(value);
-                return {"x": width / 2 + x, "y": height / 2 - y};
-            }
-    
-            let featureData = features.map((f, i) => {
-                let angle = (Math.PI / 2) + (2 * Math.PI * i / features.length);
-                return {
-                    "name": f,
-                    "angle": angle,
-                    "line_coord": angleToCoordinate(angle, 10),
-                    "label_coord": angleToCoordinate(angle, 10.5)
-                };
-            });
-            
-            // draw axis line
-            svg.selectAll("line")
-                .data(featureData)
-                .join(
-                    enter => enter.append("line")
-                        .attr("x1", width / 2)
-                        .attr("y1", height / 2)
-                        .attr("x2", d => d.line_coord.x)
-                        .attr("y2", d => d.line_coord.y)
-                        .attr("stroke","#ccc")
-                );
-            
-            // draw axis label
-            svg.selectAll(".axislabel")
-                .data(featureData)
-                .join(
-                    enter => enter.append("text")
-                        .attr("x", d => d.label_coord.x)
-                        .attr("y", d => d.label_coord.y)
-                        .text(d => d.name)
-                );
-            
-            svg.append("text")
-                .attr("x", width / 2)
-                .attr("y", 50)
-                .text(players);
-    
-            let line = d3.line()
-                .x(d => d.x)
-                .y(d => d.y);
-            let colors = ["rgb(54, 162, 235", "rgb(255, 99, 132"];
-    
-            function getPathCoordinates(data_point){
-                let coordinates = [];
-                for (var i = 0; i < features.length; i++){
-                    let ft_name = features[i];
-                    let angle = (Math.PI / 2) + (2 * Math.PI * i / features.length);
-                    coordinates.push(angleToCoordinate(angle, data_point[ft_name]));
+            console.log('new_data', JSON.parse(JSON.stringify(new_data)))
+
+            if (percentile_checkbox.checked) {
+                let row1 = new_data[0]
+                let row2 = new_data[1]
+                for (const feature of features) {
+                    row1[feature] = getPercentile(data, player1, feature)
+                    row2[feature] = getPercentile(data, player2, feature)
                 }
-                coordinates.push(angleToCoordinate(Math.PI / 2, data_point[features[0]]));
-                return coordinates;
+            } else {
+                for (const feature of features) {
+                    let max_stat = Math.max(...data.map(o => o[feature]))
+                    for (var j = 0; j < 2; j++) {
+                        let row = new_data[j]
+                        row[feature] = row[feature] * 100 / max_stat
+                    }
+                }
             }
+
+
+            return new_data
+        }
+
+        player_data = set_data(player1, player2)
+
+        console.log(player_data[0])
+        console.log(Object.entries(player_data[0]))
     
-            svg.selectAll("path")
-                .data(data)
-                .join(
-                    enter => enter.append("path")
-                        .datum(d => getPathCoordinates(d))
-                        .attr("d", line)
-                        .attr("stroke", (_, i) => colors[i] + ')')
-                        .attr("fill", (_, i) => colors[i] + ', 0.2)')
-                        .attr("fill-opacity", 0.6)
-                );
+        const create_chart = (player_data, features) => {
+
+            let canvas = document.getElementById('myChart');
+
+            let ctx = canvas.getContext('2d');
+
+            if (canvas.chart_instance) {
+                canvas.chart_instance.destroy()
+            }
+
+            const gradientBlue = ctx.createRadialGradient(290, 360, 0, 290, 360, 230);
+            gradientBlue.addColorStop(0, 'rgba(135, 135, 255, 0.5)');
+            gradientBlue.addColorStop(1, 'rgba(85, 85, 255, 0.7)');
+      
+
+            const gradientRed = ctx.createRadialGradient(290, 360, 0, 290, 360, 230);
+            gradientRed.addColorStop(0, 'rgba(255, 135, 135, 0.5)');
+            gradientRed.addColorStop(1, 'rgba(255, 85, 85, 0.7)');
+
+
+            const config = {
+                type: 'radar',
+                data: {
+                labels: features,
+                datasets: [{
+                    label: player1,
+                    data: Object.values(player_data[0]),
+                    fill: true,
+                    backgroundColor: gradientBlue,
+                    borderColor: 'rgb(255, 99, 132)',
+                    pointBackgroundColor: 'rgb(85, 85, 255)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgb(255, 99, 132)',
+                    pointHitRadius: 50,
+                  }, {
+                    label: player2,
+                    data: Object.values(player_data[1]),
+                    fill: true,
+                    backgroundColor: gradientRed,
+                    borderColor: 'rgb(54, 162, 235)',
+                    pointBackgroundColor: 'rgb(255, 85, 184)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgb(54, 162, 235)',
+                    pointHitRadius: 50,
+                  }]
+                },
+                options: {
+                    interaction: {
+                        mode: 'index',
+                        intersect: true,
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'NCAAW Players Comparison',
+                            font: {
+                                size: 30,
+                            }
+                        }
+                    },
+                    elements: {
+                      line: {
+                        borderWidth: 0,
+                      }
+                    },
+                    scales: {
+                        r: {
+                            angleLines: {
+                                display: true
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 100,
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                padding: 10,
+                                callback: function(value, index) {
+                                    return index % 2 === 0 ? value + '%' : '';
+                                },
+                            },
+                        }
+                    },
+                    responsive:true,
+                    animation: {
+                        duration: 500,
+                    },
+                },
+            }
+
+            canvas.chart_instance = new Chart(ctx, config);
         }
     
-        create_chart(player_data, features)
-    
+        create_chart(player_data, features) 
     })
 })

@@ -7,7 +7,17 @@
     <link rel="stylesheet" type="text/css" href="/css/styles.css" /> 
 </head>
 <body>
+    <div id="dropdown-container">
+        <select class="select" id="player1"></select>
+        <select class="select" id="player2"></select>
+        <input type="checkbox" id="percentile">
+        <span>Percentile</span>
+    </div>
+    <div id="canvas-container">
+        <canvas id="myChart"></canvas>
+    </div>
     <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="/js/main.js"></script>
 </body>
 </html>
