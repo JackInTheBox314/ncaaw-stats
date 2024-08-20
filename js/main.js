@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
             players.push(data[i]['NAME'])
             player['Offensive Impact'] = ((player['PTS'] + player['AST'] * 2) / player['MIN']) * (player['FG%'] * 0.5 + player['3P%'] * 0.25 + player['FT%'] * 0.25) - player['TO'] / player['MIN']
             player['Defensive Impact'] = (player['STL'] + player['BLK'] + 0.5 * player['REB']) / player['MIN']
-            player['AST/TO Ratio'] = player['AST'] / (player['TO'] + 1)
+            player['Playmaking Ability'] = player['AST'] / (player['TO'] + 1)
             player['Scoring Threat'] = (player['FG%'] * 0.3 + player['3P%'] * 0.3 + player['FT%'] * 0.2) * (player['FGM'] * 0.3 + player['3PM'] * 0.3 + player['FTM'] * 0.2)
             player['Reliability'] = (player['MIN'] / 40) * (player['FG%'] * player['PTS']) + (player['STL'] + player['BLK']) * 2
             player['TS%'] = player['PTS'] / (2 * (player['FGA'] + 0.44 * player['FTA']))
@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log(JSON.parse(JSON.stringify(data)))
 
         // let features = ['PTS', 'REB', 'BLK', 'STL', 'AST/TO Ratio', 'AST', '3PM', 'TS%']
-        let features = ['Offensive Impact', 'Defensive Impact', 'AST/TO Ratio', 'Scoring Threat', 'Reliability']
+        let features = ['Offensive Impact', 'Defensive Impact', 'Playmaking Ability', 'Scoring Threat', 'Reliability']
         console.log(features)
         console.log(players)
 
@@ -126,18 +126,15 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             const gradientBlue = ctx.createRadialGradient(290, 360, 0, 290, 360, 230);
-            gradientBlue.addColorStop(0, 'rgba(135, 135, 255, 0.5)');
-            gradientBlue.addColorStop(1, 'rgba(85, 85, 255, 0.7)');
+            gradientBlue.addColorStop(0, 'rgba(135, 135, 255, 0.3)');
+            gradientBlue.addColorStop(1, 'rgba(85, 85, 255, 0.5)');
       
 
             const gradientRed = ctx.createRadialGradient(290, 360, 0, 290, 360, 230);
-            gradientRed.addColorStop(0, 'rgba(255, 135, 135, 0.5)');
-            gradientRed.addColorStop(1, 'rgba(255, 85, 85, 0.7)');
+            gradientRed.addColorStop(0, 'rgba(255, 135, 135, 0.3)');
+            gradientRed.addColorStop(1, 'rgba(255, 85, 85, 0.5)');
 
-
-            const config = {
-                type: 'radar',
-                data: {
+            const data = {
                 labels: features,
                 datasets: [{
                     label: player1,
@@ -145,24 +142,28 @@ document.addEventListener('DOMContentLoaded', function() {
                     fill: true,
                     backgroundColor: gradientBlue,
                     borderColor: 'rgb(255, 99, 132)',
-                    pointBackgroundColor: 'rgb(85, 85, 255)',
+                    pointBackgroundColor: 'rgba(85, 85, 255, 0.5)',
                     pointBorderColor: '#fff',
                     pointHoverBackgroundColor: '#fff',
                     pointHoverBorderColor: 'rgb(255, 99, 132)',
                     pointHitRadius: 50,
-                  }, {
+                }, {
                     label: player2,
                     data: Object.values(player_data[1]),
                     fill: true,
                     backgroundColor: gradientRed,
                     borderColor: 'rgb(54, 162, 235)',
-                    pointBackgroundColor: 'rgb(255, 85, 184)',
+                    pointBackgroundColor: 'rgba(255, 85, 85, 0.5)',
                     pointBorderColor: '#fff',
                     pointHoverBackgroundColor: '#fff',
                     pointHoverBorderColor: 'rgb(54, 162, 235)',
                     pointHitRadius: 50,
-                  }]
-                },
+                }]
+            }
+
+            const config = {
+                type: 'radar',
+                data: data,
                 options: {
                     interaction: {
                         mode: 'index',
@@ -175,7 +176,61 @@ document.addEventListener('DOMContentLoaded', function() {
                             font: {
                                 size: 30,
                             }
-                        }
+                        },
+                        subtitle: {
+                            display: true,
+                            text: ['The radar chart helps estimating players skills on different aspects of the game. Each axis is a percentile', 'rating between 0 and 100, strictly based on the 2023-2024 NCAAW statistics that we have at our disposal.', 'To see the statistics used in the calculation of each score, just hover over the axes.'],
+                            fullsize: false,
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(255, 255, 255, 0.5)',
+                            titleColor: 'rgb(50, 50, 50)',
+                            bodyColor: 'rgb(100, 100, 100)',
+                            footerColor: 'rgb(150, 150, 150)',
+                            footerFont: {weight: 'normal', style: 'italic'},
+                            titleFont: {weight: 500},
+                            padding: 10,
+                            rtl: false,
+                            callbacks: {
+                                title: function(context) {
+                                    const label = context[0].label;
+                                    let caption = ''
+                                    if (label === 'Offensive Impact') {
+                                        caption = 'Ability to generate points with efficiency'
+                                    } else if (label === 'Defensive Impact') {
+                                        caption =  "Ability to disrupt the opponent’s offense and protect the basket"
+                                    } else if (label === 'Playmaking Ability') {
+                                        caption = "Ability to create efficient plays"
+                                    } else if (label === 'Scoring Threat') {
+                                        caption = "Versatility of a player’s shot selection"
+                                    } else if (label === 'Reliability') {
+                                        caption = "Team contribution by considering their court time"
+                                    }
+                                    return caption;
+                                },
+                                label: function(context) {
+                                    const value = Math.round(context.raw*100) /100
+                                    const player = context.dataset.label
+                                    return player + ': ' + value + '%'
+                                },
+                                footer: function(context) {
+                                    const label = context[0].label;
+                                    let caption = ''
+                                    if (label === 'Offensive Impact') {
+                                        caption = "Points, Assists, Effective Field Goal%"
+                                    } else if (label === 'Defensive Impact') {
+                                        caption = "Steals, Blocks, Rebounds"
+                                    } else if (label === 'Playmaking Ability') {
+                                        caption = "Assists, Turnovers"
+                                    } else if (label === 'Scoring Threat') {
+                                        caption = "2-Point %, 3-Point %, Free-Throw %"
+                                    } else if (label === 'Reliability') {
+                                        caption = "Usage %"
+                                    }
+                                    return caption;
+                                }
+                            },
+                        },
                     },
                     elements: {
                       line: {
