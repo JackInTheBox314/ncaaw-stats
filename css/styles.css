@@ -5,18 +5,152 @@ body {
     color: rgb(100, 100, 100);
 }
 
-#dropdown-container {
+h1 {
+    margin-top: 50px;
+    display: flex;
+    justify-content: center;
+}
+
+p#instructions {
+    margin-bottom: 8px;
+    margin-left: 8%;
+    font-weight: bold;
+    color: rgb(125, 125, 125);
+}
+
+div#left-container {
+    display: inline-block;
+    position: relative;
+    margin-left: 8%;
+    width: 650px;
+}
+
+div#right-container {
+    display: inline-block;
+    position: relative;
+    margin-left: 5%;
+    width: 473px;
+    vertical-align: top;
+}
+
+div#canvas-container {
+    border: 1px solid rgb(225, 225, 225);
+    border-radius: 10px;
+    margin-bottom: 20px;
+    height: 625px;
+    width: 675px;
+    position: relative;
+}
+
+div#dropdown-container {
     display: flex;
     justify-content: center;
     align-items: center;
+    margin-bottom: 30px;
+}
+
+p#blurb {
+    margin: auto;
+    margin-bottom: 20px;
+    color: rgb(150, 150, 150)
+}
+
+div#players-container {
+    display: flex;
+    justify-content: space-between;
+}
+
+div.player-info-container {
+    flex-basis: 47%;
+    height: 130px;
+    border: 1px solid rgb(225, 225, 225);
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+select.select {
+    width: 38.35%;
 }
 
 .select {
     margin-right: 10px;
 }
 
-#canvas-container {
-    height: 600px;
-    width: 600px;
-    margin: 10px auto;
+#stat-comparisons-container {
+    text-align: center;
+    color: rgb(150, 150, 150)
+}
+
+h3 {
+    margin-bottom: 0;
+}
+
+#stat-row-container {
+    display: flex;
+    justify-content: space-between;
+}
+
+#stat-row-container > div {
+    text-align: center;
+    vertical-align: middle;
+    line-height: 40px;
+    width: 33.3%;
+    margin-bottom: 5px;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+#stat-name-container {
+    color: rgb(100, 100, 100);
+}
+
+#player-stat-container {
+    background-color: rgb(227, 227, 227);
+    color: rgb(121, 121, 121);
+    border-radius: 5px;
+}
+
+.winner {
+    background-color: rgb(238, 254, 240) !important;
+    color: rgb(42, 169, 93) !important;
+}
+
+.player-img {
+    margin-top: 5%;
+    margin-bottom: 5%;
+    height: 70%;
+    width: auto;
+    border-radius: 50%;
+}
+
+#explanation {
+    position: absolute;
+    right:10px;
+    top:10px;
+    height: 15px;
+    width: 20px;
+}
+
+#info-container {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    text-align: center;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    width: 100%;
+}
+
+#info-team {
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+}
+
+.tied {
+    background-color: rgb(254, 245, 238) !important;
+    color: rgb(255, 136, 42) !important;
 }

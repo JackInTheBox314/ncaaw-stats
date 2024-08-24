@@ -7,14 +7,51 @@
     <link rel="stylesheet" type="text/css" href="css/styles.css" /> 
 </head>
 <body>
+    <h1>NCAAW Players Comparison</h1>
+    <p id="instructions">Select two players to compare.</p>
     <div id="dropdown-container">
         <select class="select" id="player1"></select>
         <select class="select" id="player2"></select>
         <input type="checkbox" id="percentile">
         <span>Percentile</span>
     </div>
-    <div id="canvas-container">
-        <canvas id="myChart"></canvas>
+    <div id="left-container">
+        <div id="canvas-container">
+            <canvas id="myChart" width="675" height="675"></canvas>
+            <img id="explanation" src="https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQnRhDVvNEcnS6U42P9RAAaNXBTFfmXY1V_62ZhD-jx7TO0KE9N">
+        </div>
+        <p id="blurb">The radar chart helps estimating players skills on different aspects of the game. Each axis is a percentile rating between 0 and 100, strictly based on the 2023-2024 NCAAW statistics that we have at our disposal. To see the statistics used in the calculation of each score, just hover over the axes.</p>
+    </div>
+    <div id="right-container">
+        <div id="players-container">
+            <div class="player-info-container" id="player1-info">
+                <img class="player-img">
+                <div id="info-container">
+                    <span id="info-name">Player1 info</span>
+                    <div id="info-team">
+                        <img><!-- Inject Live -->
+                        <span>Player1 team</span>
+                    </div>
+                    <span id="info-position">Player1 pos</span>
+                </div>
+                <!-- Inject Live-->
+            </div>
+            <div class="player-info-container" id="player2-info">
+                <img class="player-img">
+                <div id="info-container">
+                    <span id="info-name">Player2 info</span>
+                    <div id="info-team">
+                        <img><!-- Inject Live -->
+                        <span>Player2 team</span>
+                    </div>
+                    <span id="info-position">Player2 pos</span>
+                </div>
+                <!-- Inject Live -->
+            </div>
+        </div>
+        <div id="stat-comparisons-container">
+            <!-- Inject Live -->
+        </div>
     </div>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

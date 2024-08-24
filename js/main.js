@@ -1,11 +1,8 @@
 document.addEventListener('DOMContentLoaded', function() {
-    document.addEventListener('click', function(evt){
-        console.log(evt.clientX, evt.clientY)
-    })
-    d3.csv('ncaaw_players_2023-2024.csv').then(function(data) {
+    d3.csv('ncaaw_players_2023-2024(v2).csv').then(function(data) {
         let players = []
         for (var i = 0; i < data.length; i++) {
-            for (const col of Object.keys(data[i]).slice(5)) {
+            for (const col of Object.keys(data[i]).slice(5, 21)) {
                 data[i][col] = parseFloat(data[i][col])
             }
             let player = data[i]
@@ -16,26 +13,22 @@ document.addEventListener('DOMContentLoaded', function() {
             player['Scoring Threat'] = (player['FG%'] * 0.3 + player['3P%'] * 0.3 + player['FT%'] * 0.2) * (player['FGM'] * 0.3 + player['3PM'] * 0.3 + player['FTM'] * 0.2)
             player['Reliability'] = (player['MIN'] / 40) * (player['FG%'] * player['PTS']) + (player['STL'] + player['BLK']) * 2
             player['TS%'] = player['PTS'] / (2 * (player['FGA'] + 0.44 * player['FTA']))
-            
+            player['AST / TO'] = Math.round((player['AST'] / player['TO']) * 10) / 10
+            player['EFG%'] = Math.round(((player['FGM'] + 0.5 * player['3PM']) * 100 / player['FGA']) * 10) / 10
         }
 
-        const data_copy = JSON.parse(JSON.stringify(data))
-        console.log(JSON.parse(JSON.stringify(data)))
+        const original_data = JSON.parse(JSON.stringify(data))
 
         // let features = ['PTS', 'REB', 'BLK', 'STL', 'AST/TO Ratio', 'AST', '3PM', 'TS%']
         let features = ['Offensive Impact', 'Defensive Impact', 'Playmaking Ability', 'Scoring Threat', 'Reliability']
         console.log(features)
-        console.log(players)
 
 
         const getPercentile = (arr, val, field) => {
             const sorted = arr.slice().sort((a, b) => b[field] - a[field]);
-            console.log(sorted)
             const rank = sorted.findIndex(obj => obj['NAME'] === val);
             return (1-(rank / (arr.length-1))) * 100;
-        }
-        console.log(getPercentile(data_copy, 'Caitlin Clark', 'AST'))
-    
+        }    
         const first_player_dropdown = document.querySelector('#player1')
         const second_player_dropdown = document.querySelector('#player2')
         
@@ -63,14 +56,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
         let player1 = first_player_dropdown.value
         let player2 = second_player_dropdown.value
+        let both_players = [player1, player2]
     
-    
-        function handle_change() {
+        function handle_change(evt) {
             player1 = first_player_dropdown.value
             player2 = second_player_dropdown.value
-            player_data = set_data(player1, player2)
-            console.log(player_data)
-            create_chart(player_data, features)
+            both_players = [player1, player2]
+            players_data = set_data(player1, player2)
+            console.log(evt.target)
+            console.log(percentile_checkbox)
+            create_chart(players_data, features)
+            if (evt.target !== percentile_checkbox) {
+                console.log('triggered')
+                fill_info(players_data, features)
+            }
         }
 
         function set_data(player1, player2) {
@@ -87,8 +86,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     return newObj;
                 }, {})
             )
-            console.log('new_data', JSON.parse(JSON.stringify(new_data)))
-
             if (percentile_checkbox.checked) {
                 let row1 = new_data[0]
                 let row2 = new_data[1]
@@ -106,21 +103,118 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
 
-
+            console.log(new_data)
             return new_data
         }
 
-        player_data = set_data(player1, player2)
+        players_data = set_data(player1, player2)
 
-        console.log(player_data[0])
-        console.log(Object.entries(player_data[0]))
+        const player_info_containers = document.querySelectorAll('.player-info-container')
     
-        const create_chart = (player_data, features) => {
+        const fill_info = (players_data, features) => {
+            const stat_comparisons_container = document.querySelector('#stat-comparisons-container')
+            if (stat_comparisons_container.hasChildNodes) {
+                stat_comparisons_container.replaceChildren()
+            }
+            for (let i = 0; i < players_data.length; i++) {
+                let player_info_container = player_info_containers[i]
+                player_info_container.querySelector('#info-name').textContent = both_players[i]
+                console.log(player_info_container)
+                let player_image_div = player_info_container.querySelector('.player-img')
+                let info_team_img = player_info_container.querySelector('#info-team').querySelector('img')
+                let info_team_span = player_info_container.querySelector('#info-team').querySelector('span')
+                let info_pos_div = player_info_container.querySelector('#info-position')
+                console.log(player_image_div)
+                player_image_div.src = data.find(x => x.NAME === both_players[i])['player_img']
+                info_team_img.src = data.find(x => x.NAME === both_players[i])['team_img']
+                info_team_span.textContent = '• ' + data.find(x => x.NAME === both_players[i])['TEAM']
+                let pos = data.find(x => x.NAME === both_players[i])['POS']
+                if (pos === 'G'){
+                    pos = 'Guard'
+                } else if (pos === 'F') {
+                    pos = 'Forward'
+                } else if (pos === 'C') {
+                    pos = 'Center'
+                }
+                info_pos_div.textContent = pos
+            }
+            for (const feature of features) {
+                let feature_container = document.createElement('div')
+                feature_container.id = 'feature-container'
+                feature_container.appendChild(document.createElement('h3')).textContent = feature
+                stat_comparisons_container.appendChild(feature_container)
+                feature_container.appendChild(document.createElement('hr'))
+                let stats_to_compare = []
+                if (feature === 'Offensive Impact') {
+                    stats_to_compare = ['PTS', 'AST', 'EFG%']
+                } else if (feature === 'Defensive Impact') {
+                    stats_to_compare = ['STL', 'BLK', 'REB']
+                } else if (feature === 'Playmaking Ability') {
+                    stats_to_compare = ['AST / TO']
+                } else if (feature === 'Scoring Threat') {
+                    stats_to_compare = ['FG%', '3P%', 'FT%']
+                } else if (feature === 'Reliability') {
+                    stats_to_compare = ['MIN']
+                }
+                for (const stat of stats_to_compare) {
+                    let stat_row_container = document.createElement('div')
+                    stat_row_container.id = 'stat-row-container'
+                    let stat_name_container = document.createElement('div')
+                    stat_name_container.textContent = stat
+                    if (stat === 'PTS') {
+                        stat_name_container.textContent = 'Points'
+                    } else if (stat === 'AST') {
+                        stat_name_container.textContent = 'Assists'
+                    } else if (stat === 'FG%') {
+                        stat_name_container.textContent = 'Field Goal %'
+                    } else if (stat === 'STL') {
+                        stat_name_container.textContent = 'Steals'
+                    } else if (stat === 'BLK') {
+                        stat_name_container.textContent = 'Blocks'
+                    } else if (stat === 'REB') {
+                        stat_name_container.textContent = 'Rebounds'
+                    } else if (stat === '3P%') {
+                        stat_name_container.textContent = 'Three-Point %'
+                    } else if (stat === 'FT%') {
+                        stat_name_container.textContent = 'Free-Throw %'
+                    } else if (stat === 'MIN') {
+                        stat_name_container.textContent = 'Minutes Played'
+                    } else if (stat === 'EFG%') {
+                        stat_name_container.textContent = 'Effective Field Goal %'
+                    }
+                    stat_name_container.id = 'stat-name-container'
+                    stat_row_container.appendChild(stat_name_container)
+                    let stat_values = []
+                    for (let i = 0; i < players_data.length; i++) {
+                        let player_stat_container = document.createElement('div')
+                        player_stat_container.id = 'player-stat-container'
+                        let stat_value = data.find(x => x.NAME === both_players[i])[stat];
+                        stat_values.push(stat_value)
+                        player_stat_container.textContent = stat_value
+                        if (i === 0) {
+                            stat_row_container.insertBefore(player_stat_container, stat_name_container)
+                        } else {
+                            stat_row_container.appendChild(player_stat_container)
+                        }
+                    }
+                    if (stat_values[0] > stat_values[1]) {
+                        stat_row_container.firstChild.className = 'winner'
+                    } else if (stat_values[1] > stat_values[0]){
+                        stat_row_container.lastChild.className = 'winner'
+                    } else {
+                        stat_row_container.firstChild.className = 'tied'
+                        stat_row_container.lastChild.className = 'tied'
+                    }
+                    feature_container.appendChild(stat_row_container)
+
+                }
+            }
+        }
+
+        const create_chart = (players_data, features) => {
 
             let canvas = document.getElementById('myChart');
-
             let ctx = canvas.getContext('2d');
-
             if (canvas.chart_instance) {
                 canvas.chart_instance.destroy()
             }
@@ -138,7 +232,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 labels: features,
                 datasets: [{
                     label: player1,
-                    data: Object.values(player_data[0]),
+                    data: Object.values(players_data[0]),
                     fill: true,
                     backgroundColor: gradientBlue,
                     borderColor: 'rgb(255, 99, 132)',
@@ -149,7 +243,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     pointHitRadius: 50,
                 }, {
                     label: player2,
-                    data: Object.values(player_data[1]),
+                    data: Object.values(players_data[1]),
                     fill: true,
                     backgroundColor: gradientRed,
                     borderColor: 'rgb(54, 162, 235)',
@@ -165,22 +259,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 type: 'radar',
                 data: data,
                 options: {
+                    layout: {
+                        autoPadding: false,
+                        padding: {
+                            top: 20,
+                        }
+                    },
                     interaction: {
                         mode: 'index',
                         intersect: true,
                     },
                     plugins: {
-                        title: {
-                            display: true,
-                            text: 'NCAAW Players Comparison',
-                            font: {
-                                size: 30,
-                            }
-                        },
-                        subtitle: {
-                            display: true,
-                            text: ['The radar chart helps estimating players skills on different aspects of the game. Each axis is a percentile', 'rating between 0 and 100, strictly based on the 2023-2024 NCAAW statistics that we have at our disposal.', 'To see the statistics used in the calculation of each score, just hover over the axes.'],
-                            fullsize: false,
+                        legend: {
+                            position: 'top',
+                            maxHeight: 20,
                         },
                         tooltip: {
                             backgroundColor: 'rgba(255, 255, 255, 0.5)',
@@ -209,9 +301,12 @@ document.addEventListener('DOMContentLoaded', function() {
                                     return caption;
                                 },
                                 label: function(context) {
-                                    const value = Math.round(context.raw*100) /100
                                     const player = context.dataset.label
-                                    return player + ': ' + value + '%'
+                                    if (!percentile_checkbox.checked) {
+                                        return player + ': ' + Math.round(original_data.find((obj) => obj.NAME === context.dataset.label)[context.label] * 100) / 100
+                                    } else {
+                                        return player + ': ' + Math.round(context.raw * 100) / 100 + '%'
+                                    }     
                                 },
                                 footer: function(context) {
                                     const label = context[0].label;
@@ -254,7 +349,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             },
                         }
                     },
-                    responsive:true,
+                    responsive: false,
                     animation: {
                         duration: 500,
                     },
@@ -263,7 +358,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
             canvas.chart_instance = new Chart(ctx, config);
         }
-    
-        create_chart(player_data, features) 
+        fill_info(players_data, features)
+        create_chart(players_data, features)
+        
     })
 })
