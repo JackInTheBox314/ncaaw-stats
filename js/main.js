@@ -48,6 +48,30 @@ document.addEventListener('DOMContentLoaded', function() {
             second_player_dropdown.appendChild(player_option)
         }
 
+        const suggested_comparisons = document.querySelector('#suggested-comparisons')
+        console.log(suggested_comparisons)
+        for (const suggested_comparison of suggested_comparisons.children) {
+            suggested_comparison.addEventListener('click', function(){
+                const matchup = suggested_comparison.textContent;
+                player1 = matchup.slice(0, matchup.indexOf(' vs. '))
+                player2 = matchup.slice(matchup.indexOf(' vs. ') + 5)
+                console.log(player1)
+                console.log(player2)
+                first_player_dropdown.value = player1
+                second_player_dropdown.value = player2
+                handle_change(player1, player2)
+            })
+        }
+
+        const explanation_img = document.querySelector('#explanation')
+        const explanation = document.querySelector('#explanation-bubble')
+        explanation_img.addEventListener('mouseover', function(){
+            explanation.style.opacity = '100'
+        })
+        explanation_img.addEventListener('mouseout', function(){
+            explanation.style.opacity = '0'
+        })
+
         const percentile_checkbox = document.querySelector('#percentile')
         percentile_checkbox.addEventListener('change', handle_change)
     
@@ -73,6 +97,18 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         function set_data(player1, player2) {
+
+            for (const suggested_comparison of suggested_comparisons.children) {
+                let match_up = suggested_comparison.textContent;
+                let player_1 = match_up.slice(0, match_up.indexOf(' vs. '))
+                let player_2 = match_up.slice(match_up.indexOf(' vs. ') + 5)
+                if ((player1 === player_1 && player2 === player_2) || (player1 === player_2 && player2 === player_1)) {
+                    suggested_comparison.className = "checked";
+                } else {
+                    suggested_comparison.className = "";
+                }
+            }
+
             let temp_data = []
             
             temp_data.push(data.find((obj) => obj.NAME === player1))
@@ -119,12 +155,10 @@ document.addEventListener('DOMContentLoaded', function() {
             for (let i = 0; i < players_data.length; i++) {
                 let player_info_container = player_info_containers[i]
                 player_info_container.querySelector('#info-name').textContent = both_players[i]
-                console.log(player_info_container)
                 let player_image_div = player_info_container.querySelector('.player-img')
                 let info_team_img = player_info_container.querySelector('#info-team').querySelector('img')
                 let info_team_span = player_info_container.querySelector('#info-team').querySelector('span')
                 let info_pos_div = player_info_container.querySelector('#info-position')
-                console.log(player_image_div)
                 player_image_div.src = data.find(x => x.NAME === both_players[i])['player_img']
                 info_team_img.src = data.find(x => x.NAME === both_players[i])['team_img']
                 info_team_span.textContent = '• ' + data.find(x => x.NAME === both_players[i])['TEAM']
@@ -219,12 +253,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 canvas.chart_instance.destroy()
             }
 
-            const gradientBlue = ctx.createRadialGradient(290, 360, 0, 290, 360, 230);
+            const gradientBlue = ctx.createRadialGradient(318.8, 365.5, 0, 318.8, 365.5, 230);
             gradientBlue.addColorStop(0, 'rgba(135, 135, 255, 0.3)');
             gradientBlue.addColorStop(1, 'rgba(85, 85, 255, 0.5)');
       
 
-            const gradientRed = ctx.createRadialGradient(290, 360, 0, 290, 360, 230);
+            const gradientRed = ctx.createRadialGradient(318.8, 365.5, 0, 318.8, 365.5, 230);
             gradientRed.addColorStop(0, 'rgba(255, 135, 135, 0.3)');
             gradientRed.addColorStop(1, 'rgba(255, 85, 85, 0.5)');
 

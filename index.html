@@ -3,22 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NCAAW Player Comparison</title>
+    <title>NCAAW Player Comparison 2023-2024</title>
     <link rel="stylesheet" type="text/css" href="css/styles.css" /> 
 </head>
 <body>
-    <h1>NCAAW Players Comparison</h1>
-    <p id="instructions">Select two players to compare.</p>
-    <div id="dropdown-container">
-        <select class="select" id="player1"></select>
-        <select class="select" id="player2"></select>
-        <input type="checkbox" id="percentile">
-        <span>Percentile</span>
+    <h1>NCAAW Players Comparison 2023-2024</h1>
+    <div id="header">
+        <p id="instructions">Select two players to compare.</p>
+        <div id="dropdown-container">
+            <select class="select" id="player1"></select>
+            <select class="select" id="player2"></select>
+            <input type="checkbox" id="percentile">
+            <span>Percentile</span>
+        </div>
+        <span id="comparisons">Suggested Comparisons:</span>
+        <div id="suggested-comparisons">
+            <div id="comparison">Caitlin Clark vs. JuJu Watkins</div>
+            <div id="comparison">Caitlin Clark vs. Paige Bueckers</div>
+            <div id="comparison">Angel Reese vs. Cameron Brink</div>
+            <div id="comparison">Angel Reese vs. Caitlin Clark</div>
+        </div>
     </div>
     <div id="left-container">
         <div id="canvas-container">
             <canvas id="myChart" width="675" height="675"></canvas>
-            <img id="explanation" src="https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQnRhDVvNEcnS6U42P9RAAaNXBTFfmXY1V_62ZhD-jx7TO0KE9N">
+            <img id="explanation" src="img/info.png">
+            <div id="explanation-bubble"> 
+                <span id="explanation-title">Formulas</span>
+                <div id="category-row">
+                    <div id="category-title">Offensive Impact: </div>
+                    <div id="category-formula">[(Points + (AST * 2)) / Minutes Played] * (FG% * 0.5 + 3P% * 0.25 + FT% * 0.25) - (TO / Minutes Played)</div>
+                </div>
+                <div id="category-row">
+                    <div id="category-title">Defensive Impact: </div>
+                    <div id="category-formula">(STL + BLK + 0.5 * REB) / Minutes Played</div>
+                </div>
+                <div id="category-row">
+                    <div id="category-title">Playmaking Ability: </div>
+                    <div id="category-formula">AST / (TO + 1)</div>
+                </div>
+                <div id="category-row">
+                    <div id="category-title">Scoring Threat: </div>
+                    <div id="category-formula">(FG% * 0.3 + 3P% * 0.3 + FT% * 0.2) * (FGM * 0.3 + 3PM * 0.3 + FTM * 0.2)</div>
+                </div>
+                <div id="category-row">
+                    <div id="category-title">Reliability: </div>
+                    <div id="category-formula">(MP / 40) * [(FG% * PTS) + (STL + BLK) * 2</div>
+                </div>
+            </div>
         </div>
         <p id="blurb">The radar chart helps estimating players skills on different aspects of the game. Each axis is a percentile rating between 0 and 100, strictly based on the 2023-2024 NCAAW statistics that we have at our disposal. To see the statistics used in the calculation of each score, just hover over the axes.</p>
     </div>

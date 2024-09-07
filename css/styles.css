@@ -13,7 +13,6 @@ h1 {
 
 p#instructions {
     margin-bottom: 8px;
-    margin-left: 8%;
     font-weight: bold;
     color: rgb(125, 125, 125);
 }
@@ -46,7 +45,7 @@ div#dropdown-container {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-bottom: 30px;
+    margin-bottom: 15px;
 }
 
 p#blurb {
@@ -71,7 +70,7 @@ div.player-info-container {
 }
 
 select.select {
-    width: 38.35%;
+    width: 100%;
 }
 
 .select {
@@ -113,8 +112,8 @@ h3 {
 }
 
 .winner {
-    background-color: rgb(238, 254, 240) !important;
-    color: rgb(42, 169, 93) !important;
+    background-color: rgb(214, 254, 220) !important;
+    color: rgb(37, 186, 102) !important;
 }
 
 .player-img {
@@ -131,6 +130,18 @@ h3 {
     top:10px;
     height: 15px;
     width: 20px;
+}
+
+#explanation-bubble {
+    opacity: 0;
+    position: absolute;
+    background-color: rgba(250, 250, 250, 0.75);
+    top: 45px;
+    right: 10px;
+    border-radius: 10px;
+    padding: 12px;
+    width: 80%;
+    transition: 200ms;
 }
 
 #info-container {
@@ -151,6 +162,64 @@ h3 {
 }
 
 .tied {
-    background-color: rgb(254, 245, 238) !important;
-    color: rgb(255, 136, 42) !important;
+    background-color: rgb(214, 229, 254) !important;
+    color: rgb(37, 135, 186) !important;
+}
+
+#category-title{
+    font-weight: bold;
+    width: 25%;
+}
+
+#category-formula{
+    width:75%;
+}
+
+#category-row{
+    display: flex;
+    margin-top: 8px;
+}
+
+#explanation-title {
+    font-weight: bold;
+    color: black;
+    display: flex;
+    justify-content: center;
+}
+
+#suggested-comparisons {
+    display: inline-flex;
+    align-items: center;
+
+}
+
+#header {
+    width: 84%;
+    margin-left: 8%;
+    margin-bottom: 30px;
+}
+
+span#comparisons {
+    font-weight: bold;
+    color: rgb(150, 150, 150);
+    font-size: smaller;
+    margin-right: 10px;
+}
+
+div#comparison {
+    background-color: rgb(245,245,245);
+    border-radius: 7px;
+    padding: 7px;
+    color: rgb(150,150,150);
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+div#comparison:hover {
+    background-color: rgb(227,227,227);
+}
+
+.checked {
+    background-color: rgb(50,50,50) !important;
+    color: rgb(250,250,250) !important;
 }
