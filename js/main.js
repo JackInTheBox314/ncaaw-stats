@@ -182,7 +182,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (feature === 'Offensive Impact') {
                     stats_to_compare = ['PTS', 'AST', 'EFG%']
                 } else if (feature === 'Defensive Impact') {
-                    stats_to_compare = ['STL', 'BLK', 'REB']
+                    stats_to_compare = ['REB', 'BLK', 'STL']
                 } else if (feature === 'Playmaking Ability') {
                     stats_to_compare = ['AST / TO']
                 } else if (feature === 'Scoring Threat') {
