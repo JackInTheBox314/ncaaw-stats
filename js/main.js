@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
+
     d3.csv('ncaaw_players_2023-2024(v2).csv').then(function(data) {
         let players = []
         for (var i = 0; i < data.length; i++) {
@@ -29,24 +30,117 @@ document.addEventListener('DOMContentLoaded', function() {
             const rank = sorted.findIndex(obj => obj['NAME'] === val);
             return (1-(rank / (arr.length-1))) * 100;
         }    
-        const first_player_dropdown = document.querySelector('#player1')
-        const second_player_dropdown = document.querySelector('#player2')
-        
-        for (const player of players) {
-            const player_option = document.createElement('option')
-            player_option.value = player
-            player_option.textContent = player
-            first_player_dropdown.appendChild(player_option)
-        }
-        for (const player of players) {
-            const player_option = document.createElement('option')
-            player_option.value = player
-            if (player === 'JuJu Watkins') {
-                player_option.selected = 'selected'
+
+        let two_players = [];
+
+        const dropdowns = document.querySelectorAll('.dropdown')
+        const inputs = document.querySelector('.dropdowns').querySelectorAll('.selected')
+
+        first = true
+        dropdowns.forEach(dropdown => {
+            const select = dropdown.querySelector('.select')
+            const caret = dropdown.querySelector('.caret')
+            const menu = dropdown.querySelector('.menu')
+            const click_off = dropdown.querySelector('.click-off')
+
+            select.addEventListener('click', () => {
+                select.classList.toggle('select-clicked')
+                caret.classList.toggle('caret-rotate');
+                menu.classList.toggle('menu-open');
+                click_off.style.display = 'block'
+            })
+
+            for (const player of players) {
+                const option = document.createElement('li')
+                option.value = player
+                option.textContent = player
+                menu.appendChild(option)
             }
-            player_option.textContent = player
-            second_player_dropdown.appendChild(player_option)
-        }
+
+            const options = dropdown.querySelectorAll('.menu li')
+            const selected = dropdown.querySelector('.selected')
+
+            if (first) {
+                selected.value = players[0]
+                first = false
+            } else {
+                selected.value = players[1]
+            }
+
+            options.forEach(option => {
+                option.addEventListener('click', () => {
+                    click_off.style.display = 'none'
+                    selected.value = option.innerText;
+                    select.classList.remove('select-clicked')
+                    caret.classList.remove('caret-rotate')
+                    menu.classList.remove('menu-open')
+                    two_players = []
+                    for (const input of inputs) {
+                        two_players.push(input.value)
+                    }
+                    console.log(two_players)
+                    handle_change(option);
+                })
+            })
+
+            click_off.addEventListener('click', () => {
+                click_off.style.display = 'none'
+                select.classList.remove('select-clicked')
+                menu.classList.remove('menu-open');
+                caret.classList.remove('caret-rotate')
+            })
+
+            const input = dropdown.querySelector('.selected')
+            two_players.push(input.value)
+            console.log('input:', input)
+            input.addEventListener('input', filter_players)
+
+            function filter_players(evt) {
+                console.log(evt.value)
+                menu.innerHTML = '';
+                filtered_players = players.filter((player) => {
+                    return player.toLowerCase().includes((input.value).toLowerCase());
+                })
+                for (const player of filtered_players) {
+                    const option = document.createElement('li')
+                    option.value = player
+                    option.textContent = player
+                    option.addEventListener('click', () => {
+                        click_off.style.display = 'none'
+                        selected.value = option.innerText;
+                        select.classList.remove('select-clicked')
+                        caret.classList.remove('caret-rotate')
+                        menu.classList.remove('menu-open')
+                        two_players = []
+                        for (const input of inputs) {
+                            two_players.push(input.value)
+                        }
+                        console.log(two_players)
+                        handle_change(option);
+                    })
+                    menu.appendChild(option)
+                }
+            }
+        })
+
+        // const first_player_dropdown = document.querySelector('#player1')
+        // const second_player_dropdown = document.querySelector('#player2')
+        
+        // for (const player of players) {
+        //     const player_option = document.createElement('option')
+        //     player_option.value = player
+        //     player_option.textContent = player
+        //     first_player_dropdown.appendChild(player_option)
+        // }
+        // for (const player of players) {
+        //     const player_option = document.createElement('option')
+        //     player_option.value = player
+        //     if (player === 'JuJu Watkins') {
+        //         player_option.selected = 'selected'
+        //     }
+        //     player_option.textContent = player
+        //     second_player_dropdown.appendChild(player_option)
+        // }
 
         const suggested_comparisons = document.querySelector('#suggested-comparisons')
         console.log(suggested_comparisons)
@@ -55,11 +149,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 const matchup = suggested_comparison.textContent;
                 player1 = matchup.slice(0, matchup.indexOf(' vs. '))
                 player2 = matchup.slice(matchup.indexOf(' vs. ') + 5)
-                console.log(player1)
-                console.log(player2)
-                first_player_dropdown.value = player1
-                second_player_dropdown.value = player2
-                handle_change(player1, player2)
+                two_players[0] = player1
+                two_players[1] = player2
+                for (let i = 0; i < 2; i++) {
+                    inputs[i].value = two_players[i]
+                }
+                // first_player_dropdown.value = player1
+                // second_player_dropdown.value = player2
+                handle_change(suggested_comparison)
             })
         }
 
@@ -75,19 +172,19 @@ document.addEventListener('DOMContentLoaded', function() {
         const percentile_checkbox = document.querySelector('#percentile')
         percentile_checkbox.addEventListener('change', handle_change)
     
-        first_player_dropdown.addEventListener('change', handle_change)
-        second_player_dropdown.addEventListener('change', handle_change)
+        // first_player_dropdown.addEventListener('change', handle_change)
+        // second_player_dropdown.addEventListener('change', handle_change)
 
-        let player1 = first_player_dropdown.value
-        let player2 = second_player_dropdown.value
-        let both_players = [player1, player2]
+        let player1 = two_players[0]
+        let player2 = two_players[1]
+        console.log(two_players)
+        console.log(player1, player2)
     
         function handle_change(evt) {
-            player1 = first_player_dropdown.value
-            player2 = second_player_dropdown.value
-            both_players = [player1, player2]
+            player1 = two_players[0]
+            player2 = two_players[1]
             players_data = set_data(player1, player2)
-            console.log(evt.target)
+            console.log(player1)
             console.log(percentile_checkbox)
             create_chart(players_data, features)
             if (evt.target !== percentile_checkbox) {
@@ -110,9 +207,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             let temp_data = []
-            
             temp_data.push(data.find((obj) => obj.NAME === player1))
             temp_data.push(data.find((obj) => obj.NAME === player2))
+
 
             let new_data = temp_data.map(obj =>
                 features.reduce((newObj, key) => {
@@ -143,6 +240,8 @@ document.addEventListener('DOMContentLoaded', function() {
             return new_data
         }
 
+        console.log('players:', player1, player2)
+
         players_data = set_data(player1, player2)
 
         const player_info_containers = document.querySelectorAll('.player-info-container')
@@ -154,15 +253,15 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             for (let i = 0; i < players_data.length; i++) {
                 let player_info_container = player_info_containers[i]
-                player_info_container.querySelector('#info-name').textContent = both_players[i]
+                player_info_container.querySelector('#info-name').textContent = two_players[i]
                 let player_image_div = player_info_container.querySelector('.player-img')
                 let info_team_img = player_info_container.querySelector('#info-team').querySelector('img')
                 let info_team_span = player_info_container.querySelector('#info-team').querySelector('span')
                 let info_pos_div = player_info_container.querySelector('#info-position')
-                player_image_div.src = data.find(x => x.NAME === both_players[i])['player_img']
-                info_team_img.src = data.find(x => x.NAME === both_players[i])['team_img']
-                info_team_span.textContent = '• ' + data.find(x => x.NAME === both_players[i])['TEAM']
-                let pos = data.find(x => x.NAME === both_players[i])['POS']
+                player_image_div.src = data.find(x => x.NAME === two_players[i])['player_img']
+                info_team_img.src = data.find(x => x.NAME === two_players[i])['team_img']
+                info_team_span.textContent = '• ' + data.find(x => x.NAME === two_players[i])['TEAM']
+                let pos = data.find(x => x.NAME === two_players[i])['POS']
                 if (pos === 'G'){
                     pos = 'Guard'
                 } else if (pos === 'F') {
@@ -222,7 +321,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     for (let i = 0; i < players_data.length; i++) {
                         let player_stat_container = document.createElement('div')
                         player_stat_container.id = 'player-stat-container'
-                        let stat_value = data.find(x => x.NAME === both_players[i])[stat];
+                        let stat_value = data.find(x => x.NAME === two_players[i])[stat];
                         stat_values.push(stat_value)
                         player_stat_container.textContent = stat_value
                         if (i === 0) {
