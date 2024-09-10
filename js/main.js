@@ -163,10 +163,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const explanation_img = document.querySelector('#explanation')
         const explanation = document.querySelector('#explanation-bubble')
         explanation_img.addEventListener('mouseover', function(){
+            explanation.style.display = 'block'
             explanation.style.opacity = '100'
         })
         explanation_img.addEventListener('mouseout', function(){
             explanation.style.opacity = '0'
+            explanation.style.display = 'none'
         })
 
         const percentile_checkbox = document.querySelector('#percentile')
