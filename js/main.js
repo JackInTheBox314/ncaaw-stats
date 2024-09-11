@@ -1,6 +1,42 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
 
-    d3.csv('ncaaw_players_2023-2024(v2).csv').then(function(data) {
+    const league = document.querySelector('.league-select')
+    const title = document.querySelector('.title')
+    let selected_league = 'nba'
+    title.textContent = 'NBA Players Comparison 2023-2024'
+    let data = await d3.csv('nba_players_2023-2024.csv')
+    let suggested_comparison_list = [
+        'Nikola Jokic vs. Luka Doncic',
+        'Luka Doncic vs. Shai Gilgeous-Alexander',
+        'Nikola Jokic vs. Joel Embiid',
+        'Victor Wembanyama vs. LeBron James'
+    ]
+    league.addEventListener('change', async () => {
+        selected_league = league.value;
+        if (selected_league === 'nba'){
+            data = await d3.csv('nba_players_2023-2024.csv')
+            title.textContent = 'NBA Players Comparison 2023-2024'
+            suggested_comparison_list = [
+                'Nikola Jokic vs. Luka Doncic',
+                'Luka Doncic vs. Shai Gilgeous-Alexander',
+                'Nikola Jokic vs. Joel Embiid',
+                'Victor Wembanyama vs. LeBron James'
+            ]
+        } else if (selected_league === 'ncaaw'){
+            data = await d3.csv('ncaaw_players_2023-2024(v2).csv')
+            title.textContent = 'NCAAW Players Comparison 2023-2024'
+            suggested_comparison_list = [
+                'Caitlin Clark vs. JuJu Watkins',
+                'Caitlin Clark vs. Paige Bueckers',
+                'Angel Reese vs. Cameron Brink',
+                'Angel Reese vs. Caitlin Clark'
+            ]
+        }
+        run_app(data)
+    })
+    run_app(data)
+
+    function run_app(data) {
         let players = []
         for (var i = 0; i < data.length; i++) {
             for (const col of Object.keys(data[i]).slice(5, 21)) {
@@ -9,13 +45,14 @@ document.addEventListener('DOMContentLoaded', function() {
             let player = data[i]
             players.push(data[i]['NAME'])
             player['Offensive Impact'] = ((player['PTS'] + player['AST'] * 2) / player['MIN']) * (player['FG%'] * 0.5 + player['3P%'] * 0.25 + player['FT%'] * 0.25) - player['TO'] / player['MIN']
-            player['Defensive Impact'] = (player['STL'] + player['BLK'] + 0.5 * player['REB']) / player['MIN']
-            player['Playmaking Ability'] = player['AST'] / (player['TO'] + 1)
-            player['Scoring Threat'] = (player['FG%'] * 0.3 + player['3P%'] * 0.3 + player['FT%'] * 0.2) * (player['FGM'] * 0.3 + player['3PM'] * 0.3 + player['FTM'] * 0.2)
-            player['Reliability'] = (player['MIN'] / 40) * (player['FG%'] * player['PTS']) + (player['STL'] + player['BLK']) * 2
+            player['Defensive Impact'] =  ((player['MIN'] >= 10) ? (player['STL'] + player['BLK'] + 0.5 * player['REB']) / player['MIN'] : 0)
+            player['Playmaking Ability'] = ((player['TO'] >= 1) ? player['AST'] / (player['TO']) : '0')
             player['TS%'] = player['PTS'] / (2 * (player['FGA'] + 0.44 * player['FTA']))
+            player['Scoring Threat'] = (player['PTS'] * player['TS%'])
+            player['Reliability'] = (player['MIN'] / 40) * (player['FG%'] * player['PTS']) + (player['STL'] + player['BLK']) * 2
             player['AST / TO'] = Math.round((player['AST'] / player['TO']) * 10) / 10
             player['EFG%'] = Math.round(((player['FGM'] + 0.5 * player['3PM']) * 100 / player['FGA']) * 10) / 10
+            console.log(player['NAME'], player['TS%'], player['PTS'])
         }
 
         const original_data = JSON.parse(JSON.stringify(data))
@@ -40,19 +77,20 @@ document.addEventListener('DOMContentLoaded', function() {
         dropdowns.forEach(dropdown => {
             const select = dropdown.querySelector('.select')
             const caret = dropdown.querySelector('.caret')
+            
             const menu = dropdown.querySelector('.menu')
+            menu.innerHTML = ''
             const click_off = dropdown.querySelector('.click-off')
 
             select.addEventListener('click', () => {
-                select.classList.toggle('select-clicked')
-                caret.classList.toggle('caret-rotate');
-                menu.classList.toggle('menu-open');
+                select.classList.add('select-clicked')
+                caret.classList.add('caret-rotate');
+                menu.classList.add('menu-open');
                 click_off.style.display = 'block'
             })
 
             for (const player of players) {
                 const option = document.createElement('li')
-                option.value = player
                 option.textContent = player
                 menu.appendChild(option)
             }
@@ -123,26 +161,13 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         })
 
-        // const first_player_dropdown = document.querySelector('#player1')
-        // const second_player_dropdown = document.querySelector('#player2')
-        
-        // for (const player of players) {
-        //     const player_option = document.createElement('option')
-        //     player_option.value = player
-        //     player_option.textContent = player
-        //     first_player_dropdown.appendChild(player_option)
-        // }
-        // for (const player of players) {
-        //     const player_option = document.createElement('option')
-        //     player_option.value = player
-        //     if (player === 'JuJu Watkins') {
-        //         player_option.selected = 'selected'
-        //     }
-        //     player_option.textContent = player
-        //     second_player_dropdown.appendChild(player_option)
-        // }
-
         const suggested_comparisons = document.querySelector('#suggested-comparisons')
+        let z = 0
+        for (const suggested_comparison of suggested_comparisons.children) {
+            console.log(suggested_comparison_list[z])
+            suggested_comparison.textContent = suggested_comparison_list[z]
+            z++
+        }
         console.log(suggested_comparisons)
         for (const suggested_comparison of suggested_comparisons.children) {
             suggested_comparison.addEventListener('click', function(){
@@ -173,7 +198,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const percentile_checkbox = document.querySelector('#percentile')
         percentile_checkbox.addEventListener('change', handle_change)
-    
+
         // first_player_dropdown.addEventListener('change', handle_change)
         // second_player_dropdown.addEventListener('change', handle_change)
 
@@ -181,7 +206,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let player2 = two_players[1]
         console.log(two_players)
         console.log(player1, player2)
-    
+
         function handle_change(evt) {
             player1 = two_players[0]
             player2 = two_players[1]
@@ -247,9 +272,10 @@ document.addEventListener('DOMContentLoaded', function() {
         players_data = set_data(player1, player2)
 
         const player_info_containers = document.querySelectorAll('.player-info-container')
-    
+
         const fill_info = (players_data, features) => {
             const stat_comparisons_container = document.querySelector('#stat-comparisons-container')
+            stat_comparisons_container.innerHTML = ''
             if (stat_comparisons_container.hasChildNodes) {
                 stat_comparisons_container.replaceChildren()
             }
@@ -316,6 +342,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         stat_name_container.textContent = 'Minutes Played'
                     } else if (stat === 'EFG%') {
                         stat_name_container.textContent = 'Effective Field Goal %'
+                    } else if (stat === 'AST / TO') {
+                        stat_name_container.textContent = 'Assist/Turnover Ratio'
                     }
                     stat_name_container.id = 'stat-name-container'
                     stat_row_container.appendChild(stat_name_container)
@@ -357,7 +385,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const gradientBlue = ctx.createRadialGradient(318.8, 365.5, 0, 318.8, 365.5, 230);
             gradientBlue.addColorStop(0, 'rgba(135, 135, 255, 0.3)');
             gradientBlue.addColorStop(1, 'rgba(85, 85, 255, 0.5)');
-      
+        
 
             const gradientRed = ctx.createRadialGradient(318.8, 365.5, 0, 318.8, 365.5, 230);
             gradientRed.addColorStop(0, 'rgba(255, 135, 135, 0.3)');
@@ -453,7 +481,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                     } else if (label === 'Playmaking Ability') {
                                         caption = "Assists, Turnovers"
                                     } else if (label === 'Scoring Threat') {
-                                        caption = "2-Point %, 3-Point %, Free-Throw %"
+                                        caption = "True Shooting %, Points"
                                     } else if (label === 'Reliability') {
                                         caption = "Usage %"
                                     }
@@ -463,9 +491,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         },
                     },
                     elements: {
-                      line: {
+                        line: {
                         borderWidth: 0,
-                      }
+                        }
                     },
                     scales: {
                         r: {
@@ -495,6 +523,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         fill_info(players_data, features)
         create_chart(players_data, features)
-        
-    })
+    }
+
 })

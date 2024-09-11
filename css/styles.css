@@ -5,6 +5,12 @@ body {
     color: rgb(100, 100, 100);
 }
 
+.league-select {
+    position: absolute;
+    top: 4.5em;
+    left: 25%;
+}
+
 h1 {
     margin-top: 50px;
     display: flex;

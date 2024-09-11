@@ -3,16 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NCAAW Player Comparison 2023-2024</title>
+    <title>Basketball Player Comparison 2023-2024</title>
     <link rel="stylesheet" type="text/css" href="css/styles.css" /> 
 </head>
 <body>
-    <h1>NCAAW Players Comparison 2023-2024</h1>
+    <select class="league-select">
+        <option value = "nba">NBA</option>
+        <option value = "ncaaw">NCAAW</option>
+    </select>
+    <h1 class="title"></h1>
     <div id="header">
         <p id="instructions">Select two players to compare.</p>
         <div id="dropdown-container">
-            <!-- <select class="select" id="player1"></select>
-            <select class="select" id="player2"></select> -->
             <div class="dropdowns">
                 <div class="dropdown">
                     <div class="select">
@@ -21,7 +23,7 @@
                     </div>
                     <div class="click-off"></div>
                     <ul class="menu">
-    
+                        <!-- Inject Live-->
                     </ul>
                 </div>
                 <div class="dropdown">
@@ -59,15 +61,15 @@
                 </div>
                 <div id="category-row">
                     <div id="category-title">Defensive Impact: </div>
-                    <div id="category-formula">(Steals + Blocks + 0.5 * Rebounds) / Minutes Played</div>
+                    <div id="category-formula">(Steals + Blocks + 0.5 * Rebounds) / Minutes Played (only players with at least 10 minutes played per game)</div>
                 </div>
                 <div id="category-row">
                     <div id="category-title">Playmaking Ability: </div>
-                    <div id="category-formula">Assists / (Turnovers + 1)</div>
+                    <div id="category-formula">Assists / Turnovers (only players with at least 1 turnover per game)</div>
                 </div>
                 <div id="category-row">
                     <div id="category-title">Scoring Threat: </div>
-                    <div id="category-formula">(Field-Goal % * 0.3 + 3-Point % * 0.3 + Free-Throw % * 0.2) * (Field-Goals Made * 0.3 + 3-Points Made * 0.3 + Free-Throws Made * 0.2)</div>
+                    <div id="category-formula">Points / (2 * (Field-Goal Attemps + 0.44 * Free-Throw Attemps)) * Points</div>
                 </div>
                 <div id="category-row">
                     <div id="category-title">Reliability: </div>
